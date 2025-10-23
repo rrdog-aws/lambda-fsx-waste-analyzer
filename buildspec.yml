@@ -1,0 +1,29 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      python: 3.9
+    commands:
+      - echo "Installing pip..."
+      - pip install --upgrade pip
+
+  pre_build:
+    commands:
+      - echo "Cleaning build directory..."
+      - rm -rf build_root
+      - mkdir -p build_root
+
+  build:
+    commands:
+      - echo "Copying main.py into build directory..."
+      - cp main.py build_root/
+      - echo "Installing dependencies if any..."
+      - if [ -f requirements.txt ]; then pip install -r requirements.txt -t build_root/; else echo "No requirements.txt found, skipping"; fi
+      - cd build_root
+      - echo "Creating deployment package..."
+      - zip -r9 ../lambda_package.zip .
+
+artifacts:
+  files:
+    - lambda_package.zip
