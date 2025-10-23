@@ -10,17 +10,19 @@ phases:
 
   pre_build:
     commands:
-      - echo "Cleaning build directory..."
+      - echo "Cleaning and preparing build folder..."
       - rm -rf build_root
       - mkdir -p build_root
 
   build:
     commands:
-      - echo "Copying main.py into build directory..."
+      - echo "Copying lambda_function.py to build root..."
       - cp lambda_function.py build_root/
-      - echo "Installing dependencies if any..."
+      - echo "Installing dependencies (if any)..."
       - if [ -f requirements.txt ]; then pip install -r requirements.txt -t build_root/; else echo "No requirements.txt found, skipping"; fi
       - cd build_root
+      - echo "Verifying build contents..."
+      - ls -la
       - echo "Creating deployment package..."
       - zip -r9 ../lambda_package.zip .
 
