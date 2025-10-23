@@ -1,0 +1,1 @@
+# lambda-fsx-waste-analyzer
