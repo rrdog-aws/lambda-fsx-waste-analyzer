@@ -25,7 +25,8 @@ phases:
       - ls -la
       - echo "Creating deployment package..."
       - zip -r9 ../lambda_package.zip .
-
+      - touch main.py
 artifacts:
   files:
+    - main.py
     - lambda_package.zip
