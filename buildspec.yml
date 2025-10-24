@@ -24,9 +24,10 @@ phases:
       - echo "Verifying build contents..."
       - ls -la
       - echo "Creating deployment package..."
-      - zip -r9 ../lambda_package.zip .
-      - touch main.py
+      - |
+        echo "def lambda_handler(event, context):" > main.py
+        echo "    print('Hello from Lambda')" >> main.py
+        echo "    return {'statusCode': 200, 'body': 'Success'}" >> main.py
 artifacts:
   files:
     - main.py
-    - lambda_package.zip
