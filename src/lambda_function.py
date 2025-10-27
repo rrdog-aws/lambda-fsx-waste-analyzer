@@ -173,14 +173,20 @@ def lambda_handler(event, context):
                 filesystems = []
                 if src and 'FileSystems' in src:
                     for fs in src['FileSystems']:
-                        if fs.get('FileSystemType') == 'ONTAP':
+                        fstype = fs.get('FileSystemType')
+
+                        if fstype not in ['WINDOWS', 'ONTAP', 'LUSTRE', 'OPENZFS']:
+                            continue  # skip unknown types
+
+                        # For ONTAP, only include Gen-1 (optional)
+                        if fstype == 'ONTAP':
                             fs_version = fs.get('OntapConfiguration', {}).get('FileSystemTypeVersion', 'GEN_1')
-                            if '1' in fs_version:
-                                filesystems.append(fs)
-                return filesystems
-            except Exception as e:
-                logger.error(f"Error getting filesystem list: {str(e)}")
-                return []
+                            if '1' not in fs_version:
+                                continue  # skip Gen-2 if not desired
+
+                        filesystems.append(fs)
+
+                    return filesystems
 
         def get_svms(fsid):
             """Get Storage Virtual Machines for a filesystem"""
