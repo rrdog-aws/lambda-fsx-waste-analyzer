@@ -30,6 +30,11 @@ def lambda_handler(event, context):
         
         # Configuration
         region = os.environ.get('REGION', 'eu-west-1')
+        # Get region from query parameters if provided
+        if event and 'queryStringParameters' in event and event['queryStringParameters'] and 'region' in event['queryStringParameters']:
+            region = event['queryStringParameters']['region']
+            logger.info(f"Using region from query parameters: {region}")
+
         lookback_days = int(os.environ.get('LOOKBACK_DAYS', '3'))
         period = int(os.environ.get('PERIOD', '840'))  # 5 min
         pctl = int(os.environ.get('PCTL', '95'))  # percentile
