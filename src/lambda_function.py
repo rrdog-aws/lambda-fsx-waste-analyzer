@@ -29,7 +29,7 @@ def lambda_handler(event, context):
             }
         
         # Configuration
-        # region = os.environ.get('REGION', '')
+        region = os.environ.get('REGION', 'eu-west-1')
         # Get region from query parameters if provided
         if event and 'queryStringParameters' in event and event['queryStringParameters'] and 'region' in event['queryStringParameters']:
             region = event['queryStringParameters']['region']
