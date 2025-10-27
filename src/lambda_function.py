@@ -187,6 +187,10 @@ def lambda_handler(event, context):
                         filesystems.append(fs)
 
                     return filesystems
+                return []  # Return empty list if no filesystems found
+            except Exception as e:
+                logger.error(f"Error getting filesystem list: {str(e)}")
+                return []
 
         def get_svms(fsid):
             """Get Storage Virtual Machines for a filesystem"""
@@ -574,30 +578,4 @@ def lambda_handler(event, context):
             'headers': {
                 'Content-Type': 'application/json',
                 'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Headers': '*',
-                'Access-Control-Allow-Methods': 'GET,OPTIONS,POST'
-            },
-            'body': json.dumps({
-                'timestamp': now_utc(),
-                'results': analysis_results
-            }, default=decimal_serializer)
-        }
-        
-    except Exception as e:
-        logger.error(f"Error in lambda_handler: {str(e)}", exc_info=True)
-        return {
-            'statusCode': 500,
-            'headers': {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'
-            },
-            'body': json.dumps({
-                'error': str(e)
-            })
-        }
-
-# Helper function to handle Decimal serialization
-def decimal_serializer(obj):
-    if isinstance(obj, Decimal):
-        return float(obj)
-    raise TypeError("Type not serializable")
+                'Access-Control-Allow-Headers':
