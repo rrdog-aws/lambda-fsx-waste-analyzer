@@ -11,6 +11,7 @@ logger.setLevel(logging.INFO)
 
 def lambda_handler(event, context):
     """Lambda handler for FSx analysis"""
+    """another comment for testing commit and production"""
     try:
         logger.info(f"Processing event: {json.dumps(event)}")
         
