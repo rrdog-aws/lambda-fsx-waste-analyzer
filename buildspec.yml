@@ -29,5 +29,5 @@ phases:
 
 artifacts:
   files:
-    - function.zip
+    - src/*
   discard-paths: yes
