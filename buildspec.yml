@@ -21,13 +21,10 @@ phases:
       - echo "Installing dependencies (if any)..."
       - if [ -f requirements.txt ]; then pip install -r requirements.txt -t build_root/; else echo "No requirements.txt found, skipping"; fi
       - cd build_root
-      - echo "Creating deployment package..."
-      - zip -r ../function.zip .
-      - cd ..
       - echo "Verifying build contents..."
       - ls -la
-
+      - echo "Creating deployment package..."
+       
 artifacts:
   files:
     - src/*
-  discard-paths: yes
