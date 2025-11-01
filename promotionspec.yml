@@ -1,0 +1,12 @@
+version: 0.2
+
+phases:
+  build:
+    commands:
+      # Read the version that was tested
+      - VERSION=$(cat version.txt)
+      - echo "Promoting version $VERSION to production"
+      
+      # Update production alias to point to the tested version
+      - aws lambda update-alias --function-name FSxAnalyser --name production --function-version $VERSION
+      - echo "Updated production alias to version $VERSION"
