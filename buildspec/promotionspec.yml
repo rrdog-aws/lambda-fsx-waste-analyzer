@@ -1,12 +1,25 @@
 version: 0.2
 
 phases:
+  pre_build:
+    commands:
+      - pwd
+      - ls -la
+      
   build:
     commands:
-      # Read the version that was tested
+      # Print the contents of the input artifact directory
+      - echo "Contents of input directory:"
+      - ls -la
+      
+      # Read the version file
       - VERSION=$(cat version.txt)
-      - echo "Promoting version $VERSION to production"
+      - echo "Retrieved version: $VERSION"
       
       # Update production alias to point to the tested version
       - aws lambda update-alias --function-name FSxAnalyser --name production --function-version $VERSION
       - echo "Updated production alias to version $VERSION"
+
+artifacts:
+  files:
+    - version.txt
