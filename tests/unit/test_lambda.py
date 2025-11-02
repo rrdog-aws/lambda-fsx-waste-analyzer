@@ -1,10 +1,8 @@
 import json
 import pytest
-import sys
 import os
-
-# Import the lambda function
-from lambda_function import lambda_handler
+import sys
+from src.lambda_function import lambda_handler  # Update the import path
 
 def test_lambda_handler():
     # Test event

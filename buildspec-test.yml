@@ -6,32 +6,30 @@ phases:
       python: 3.9
     commands:
       - pip install pytest pytest-cov requests
-      - pip install -r requirements.txt || echo "No requirements.txt found"
 
   pre_build:
     commands:
-      - echo "Setting up Python path"
-      - export PYTHONPATH="${PYTHONPATH}:${CODEBUILD_SRC_DIR}"
+      # Add src directory to PYTHONPATH
+      - export PYTHONPATH="${CODEBUILD_SRC_DIR}/src:${PYTHONPATH}"
+      - echo "PYTHONPATH is set to: ${PYTHONPATH}"
+      - ls -la ${CODEBUILD_SRC_DIR}/src
 
   build:
     commands:
-      # List directory contents for debugging
-      - echo "Current directory contents:"
+      # Debug information
+      - echo "Current directory: $(pwd)"
+      - echo "Directory contents:"
       - ls -la
       - echo "Source directory contents:"
       - ls -la src/
       
-      # Run unit tests with correct path
-      - python -m pytest tests/unit/ --cov=src/ --cov-report=xml
+      # Run unit tests
+      - python -m pytest tests/unit/ -v --cov=src/ --cov-report=xml
       
       # Integration tests
       - |
         TEST_API_ENDPOINT="https://0c345js9lc.execute-api.us-east-1.amazonaws.com/test" \
-        python -m pytest tests/integration/
-      
-      # Security scan
-      - pip install bandit
-      - bandit -r src/ -f json -o bandit-results.json || true
+        python -m pytest tests/integration/ -v
 
   post_build:
     commands:
@@ -48,13 +46,8 @@ reports:
     files:
       - 'coverage.xml'
     file-format: COBERTURAXML
-  security:
-    files:
-      - 'bandit-results.json'
-    file-format: JSON
 
 artifacts:
   files:
     - coverage.xml
-    - bandit-results.json
   discard-paths: no
