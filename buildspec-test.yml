@@ -1,4 +1,3 @@
-# buildspec-test.yml
 version: 0.2
 
 phases:
@@ -7,18 +6,25 @@ phases:
       python: 3.9
     commands:
       - pip install pytest pytest-cov requests
+      - pip install -r requirements.txt || echo "No requirements.txt found"
 
   build:
     commands:
+      # List directory contents for debugging
+      - echo "Current directory contents:"
+      - ls -la
+      - echo "Tests directory contents:"
+      - ls -la tests/ || echo "No tests directory found"
+      
       # Run unit tests
-      - pytest tests/unit/ --cov=src/
+      - pytest tests/unit/ --cov=src/ --cov-report=xml
       
       # Integration tests against test endpoint
-      - TEST_API_ENDPOINT="https://0c345js9lc.execute-api.us-east-1.amazonaws.com/test" python -m pytest tests/integration/
+      - TEST_API_ENDPOINT="https://0c345js9lc.execute-api.us-east-1.amazonaws.com/test" pytest tests/integration/
       
       # Security scans
       - pip install bandit
-      - bandit -r src/
+      - bandit -r src/ -f json -o bandit-results.json
 
   post_build:
     commands:
@@ -35,3 +41,13 @@ reports:
     files:
       - 'coverage.xml'
     file-format: COBERTURAXML
+  security:
+    files:
+      - 'bandit-results.json'
+    file-format: JSON
+
+artifacts:
+  files:
+    - coverage.xml
+    - bandit-results.json
+  discard-paths: no
