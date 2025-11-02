@@ -1,17 +1,19 @@
 version: 0.2
 
 phases:
-  pre_build:
-    commands:
-      - echo "Listing primary source contents (buildspec location)"
-      - ls -la $CODEBUILD_SRC_DIR
-      - echo "Listing TestVersion artifact contents"
-      - ls -la $CODEBUILD_SRC_DIR_TestVersion
-      
   build:
     commands:
-      # Get version from TestVersion artifact
-      - VERSION=$(cat $CODEBUILD_SRC_DIR_TestVersion/version.txt)
-      - echo "Promoting version $VERSION to production"
-      - aws lambda update-alias --function-name FSxAnalyser --name production --function-version $VERSION
-      - echo "Successfully promoted version $VERSION to production"
+      # Get the version that test alias is pointing to
+      - TEST_VERSION=$(aws lambda get-alias --function-name FSxAnalyser --name test --query 'FunctionVersion' --output text)
+      - echo "Test alias is pointing to version: $TEST_VERSION"
+      
+      # Update production alias to point to the same version
+      - aws lambda update-alias --function-name FSxAnalyser --name production --function-version $TEST_VERSION
+      - echo "Successfully promoted version $TEST_VERSION to production"
+      
+      # Verify both aliases
+      - echo "Verifying aliases..."
+      - echo "Test alias configuration:"
+      - aws lambda get-alias --function-name FSxAnalyser --name test
+      - echo "Production alias configuration:"
+      - aws lambda get-alias --function-name FSxAnalyser --name production
