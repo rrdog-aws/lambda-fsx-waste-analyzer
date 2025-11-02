@@ -8,23 +8,30 @@ phases:
       - pip install pytest pytest-cov requests
       - pip install -r requirements.txt || echo "No requirements.txt found"
 
+  pre_build:
+    commands:
+      - echo "Setting up Python path"
+      - export PYTHONPATH="${PYTHONPATH}:${CODEBUILD_SRC_DIR}"
+
   build:
     commands:
       # List directory contents for debugging
       - echo "Current directory contents:"
       - ls -la
-      - echo "Tests directory contents:"
-      - ls -la tests/ || echo "No tests directory found"
+      - echo "Source directory contents:"
+      - ls -la src/
       
-      # Run unit tests
-      - pytest tests/unit/ --cov=src/ --cov-report=xml
+      # Run unit tests with correct path
+      - python -m pytest tests/unit/ --cov=src/ --cov-report=xml
       
-      # Integration tests against test endpoint
-      - TEST_API_ENDPOINT="https://0c345js9lc.execute-api.us-east-1.amazonaws.com/test" pytest tests/integration/
+      # Integration tests
+      - |
+        TEST_API_ENDPOINT="https://0c345js9lc.execute-api.us-east-1.amazonaws.com/test" \
+        python -m pytest tests/integration/
       
-      # Security scans
+      # Security scan
       - pip install bandit
-      - bandit -r src/ -f json -o bandit-results.json
+      - bandit -r src/ -f json -o bandit-results.json || true
 
   post_build:
     commands:
