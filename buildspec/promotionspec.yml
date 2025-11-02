@@ -5,7 +5,7 @@ phases:
     commands:
       - echo "Getting test alias version"
       - TEST_VERSION=$(aws lambda get-alias --function-name FSxAnalyser --name test --query 'FunctionVersion' --output text)
-      - echo "Test alias is pointing to version: $TEST_VERSION"
+      - echo "Test alias is pointing to version $TEST_VERSION"
       - echo "Updating production alias"
       - aws lambda update-alias --function-name FSxAnalyser --name production --function-version $TEST_VERSION
       - echo "Successfully promoted version $TEST_VERSION to production"
