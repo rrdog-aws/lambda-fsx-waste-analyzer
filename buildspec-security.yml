@@ -1,0 +1,19 @@
+# buildspec-security.yml
+version: 0.2
+
+phases:
+  install:
+    commands:
+      - pip install safety bandit
+      
+  build:
+    commands:
+      # Dependency vulnerability check
+      - safety check
+      
+      # Static code analysis
+      - bandit -r .
+      
+      # Check for credentials/secrets
+      - pip install detect-secrets
+      - detect-secrets scan .

@@ -1,0 +1,12 @@
+# buildspec-preprod-validation.yml
+version: 0.2
+
+phases:
+  build:
+    commands:
+      # Verify test alias is working
+      - aws lambda invoke --function-name FSxAnalyser:test --payload '{}' response.json
+      - python validate_response.py response.json
+      
+      # Check Lambda metrics
+      - aws cloudwatch get-metric-statistics --namespace AWS/Lambda --metric-name Errors --dimensions Name=FunctionName,Value=FSxAnalyser:test

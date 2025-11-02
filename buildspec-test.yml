@@ -1,0 +1,37 @@
+# buildspec-test.yml
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      python: 3.9
+    commands:
+      - pip install pytest pytest-cov requests
+
+  build:
+    commands:
+      # Run unit tests
+      - pytest tests/unit/ --cov=src/
+      
+      # Integration tests against test endpoint
+      - TEST_API_ENDPOINT="https://0c345js9lc.execute-api.us-east-1.amazonaws.com/test" python -m pytest tests/integration/
+      
+      # Security scans
+      - pip install bandit
+      - bandit -r src/
+
+  post_build:
+    commands:
+      - |
+        if [ $CODEBUILD_BUILD_SUCCEEDING = 1 ]; then
+          echo "All tests passed!"
+        else
+          echo "Tests failed!"
+          exit 1
+        fi
+
+reports:
+  coverage:
+    files:
+      - 'coverage.xml'
+    file-format: COBERTURAXML
