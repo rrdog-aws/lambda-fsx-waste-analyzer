@@ -11,5 +11,5 @@ phases:
 
 artifacts:
   files:
-    - output/version.txt
+    - version.txt
   discard-paths: yes
