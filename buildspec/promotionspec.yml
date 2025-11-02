@@ -3,15 +3,12 @@ version: 0.2
 phases:
   build:
     commands:
-      # Get the version that test alias is pointing to
+      - echo "Getting test alias version"
       - TEST_VERSION=$(aws lambda get-alias --function-name FSxAnalyser --name test --query 'FunctionVersion' --output text)
       - echo "Test alias is pointing to version: $TEST_VERSION"
-      
-      # Update production alias to point to the same version
+      - echo "Updating production alias"
       - aws lambda update-alias --function-name FSxAnalyser --name production --function-version $TEST_VERSION
       - echo "Successfully promoted version $TEST_VERSION to production"
-      
-      # Verify both aliases
       - echo "Verifying aliases..."
       - echo "Test alias configuration:"
       - aws lambda get-alias --function-name FSxAnalyser --name test
