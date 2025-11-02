@@ -11,11 +11,11 @@ phases:
       - aws lambda update-alias --function-name FSxAnalyser --name test --function-version $LATEST_VERSION
       
       # Save the version number for potential production promotion
-      - echo $LATEST_VERSION > version.txt
+      - mkdir -p output
+      - echo $LATEST_VERSION > output/version.txt
       - echo "Updated test alias to version $LATEST_VERSION"
 
 artifacts:
   files:
-    - version.txt
-  base-directory: .
+    - output/version.txt
   discard-paths: no
