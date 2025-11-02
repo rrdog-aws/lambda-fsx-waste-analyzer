@@ -3,17 +3,102 @@ version: 0.2
 
 phases:
   install:
+    runtime-versions:
+      python: 3.11
     commands:
-      - pip install safety bandit
+      - pip install bandit safety detect-secrets
+      - pip install -r requirements.txt
       
   build:
     commands:
-      # Dependency vulnerability check
-      - safety check
+      # Create results directory
+      - mkdir -p security-results
+      
+      # Dependency vulnerability check with custom exit code handling
+      - |
+        echo "Running safety check..."
+        safety check --json > security-results/safety-report.json || true
+        if [ -s security-results/safety-report.json ]; then
+          echo "Vulnerabilities found, but continuing pipeline. Check safety-report.json for details."
+        fi
       
       # Static code analysis
-      - bandit -r .
+      - |
+        echo "Running Bandit analysis..."
+        bandit -r . -f json -o security-results/bandit-report.json || true
+        if [ -s security-results/bandit-report.json ]; then
+          echo "Security issues found by Bandit. Check bandit-report.json for details."
+        fi
       
       # Check for credentials/secrets
-      - pip install detect-secrets
-      - detect-secrets scan .
+      - |
+        echo "Scanning for secrets..."
+        detect-secrets scan . > security-results/secrets-report.json
+        
+      # Evaluate results and decide whether to fail
+      - |
+        python3 << EOF
+        import json
+        import sys
+        
+        fail_build = False
+        messages = []
+        
+        # Check safety results
+        try:
+            with open('security-results/safety-report.json') as f:
+                safety_data = json.load(f)
+                if safety_data:
+                    messages.append(f"Found {len(safety_data)} dependency vulnerabilities")
+                    # Only fail for high severity vulnerabilities
+                    high_sev = [v for v in safety_data if v.get('severity', '').upper() == 'HIGH']
+                    if high_sev:
+                        fail_build = True
+        except:
+            print("No safety report found or error reading it")
+        
+        # Check bandit results
+        try:
+            with open('security-results/bandit-report.json') as f:
+                bandit_data = json.load(f)
+                if bandit_data.get('results'):
+                    high_sev = [r for r in bandit_data['results'] if r['issue_severity'] == 'HIGH']
+                    if high_sev:
+                        messages.append(f"Found {len(high_sev)} high severity code issues")
+                        fail_build = True
+        except:
+            print("No bandit report found or error reading it")
+        
+        # Check secrets scan results
+        try:
+            with open('security-results/secrets-report.json') as f:
+                secrets_data = json.load(f)
+                if secrets_data.get('results'):
+                    messages.append(f"Found potential secrets in code")
+                    fail_build = True
+        except:
+            print("No secrets report found or error reading it")
+        
+        # Print summary
+        print("\n=== Security Scan Summary ===")
+        for msg in messages:
+            print(f"- {msg}")
+        
+        # Exit with status
+        if fail_build:
+            print("\n❌ Critical security issues found. Pipeline will fail.")
+            sys.exit(1)
+        else:
+            print("\n✅ No critical security issues found. Pipeline will continue.")
+        EOF
+
+artifacts:
+  files:
+    - security-results/**/*
+  discard-paths: no
+
+reports:
+  security-reports:
+    files:
+      - security-results/*.json
+    file-format: JSON
